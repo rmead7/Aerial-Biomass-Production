@@ -1,0 +1,179 @@
+---
+title: "Math 564 Project"
+author: "Robert Mead"
+date: "12/05/2021"
+output: pdf_document
+---
+\newpage
+\section{Introduction}
+In the Cape Fear Estuary in North Carolina there is a substrate that is influencing the aerial biomass production. The data set has fourteen predictors that characterize the substrates physicochemical properties that are in the soil.Let the variable $BIO$ represent the biomass production that influences by the presence of the substrate. The physicochemical properties  include : $H_2S$, $Salinity$, $EH_7$,$pH$, $BUF$, $P$,$K$, $Ca$, $Mg$, $Na$, $Mn$, $Zn$, $Cu$, and $NH_4$. This project's objective is to identify the important physicochemical properties of the substrate that influence the aerial biomass production in the Cape Fear Estuary.
+\section{Collinearity of Full Regression Model}
+The value of coefficients in a ordinary least squares regression can be classified as unstable, and lead to erroneous inferences with the presence of collinearity within the predictor variables. In this section, an ordinary least squares regression will be completed on the full model of fourteen predictors on the response variable, $BIO$, to predict the amount of aerial biomass is produced due to the physicochemical substrate that is present. The full regression model will be analyzed for any collinearity using three techniques:
+\begin{enumerate}
+  \item Standardized Residuals versus Fitted Values Plot
+  \item Pairwise Correlation Coefficient Matrix
+  \item Variance Inflation Factor (VIF)
+\end{enumerate}
+To fully understand the extent of the collinearity between the predictor variables a regression of all the predictors is a necessary step in the process of determining the important physicochemical substrates that influence the aerial biomass production. The full regression model can be characterized by the coefficient values in the table. Completing the ordinary least squares regression on the full model the coefficients are below in Table 1. It is observed that the coefficient value are have a large range. The procedures, stated above, will assist in determining the predictors that influence the collinearity in the full regression model. 
+```{r,echo=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+#Loading Dataframe
+df <- read.table("/Users/robbiemead/Documents/Graduate School/Courses/Fall 2021/MATH 564/Project /Project/LINTHALL.txt",header = TRUE)
+df <- subset(df,select = -c(Obs,Loc,Type))
+
+#OLSR
+library("knitr")
+model <- lm(BIO~H2S+SAL+Eh7+pH+BUF+P+K+Ca+Mg+Na+Mn+Zn+Cu+NH4,data = df)
+coef <- as.data.frame(model$coefficients)
+varnum <- as.data.frame(c("X0","X1","X2","X3","X4","X5","X6","X7","X8","X9","X10","X11","X12","X13","X14"))
+coef <- cbind(varnum,coef)
+colnames(coef)[1] <- "Variable"
+colnames(coef)[2] <- "Coefficients"
+kable(coef,caption = "Ordinary Least Squares Regression Coefficients ")
+```
+\subsection{Standardized Residuals versus Fitted Values Plot} 
+The Standardized Residuals versus Fitted Values Plot is a method of testing collinearity, because it tests for linearity of the data set, unequal variance and outliers.The presence of collinearity in a Standardized Residual versus Fitted Value Plot will be indicated by a trend in the data set. The plot, ideally, should have no trends with the points roughly forming a band of values close or near zero. the Standardized Residuals versus Fitted Values Plot for the data set shows the there is an unequal variance due to the increase in the value of the residuals as the value of the predicted values increase. This increase in the residuals as the predictor values get larger shows that there is an existence of collinearity. Though the graph does not reveal which predictors have a collinear relationship the gradualy increase in the residuals as the predictor values get larger is an indication. Other tests will be used to further explore the extent and the specificity of the collinearity between the fourteen predictor variables.
+```{r,echo=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+#Collinearity Diagnostics
+#i.)standardized residuals versus fitted values
+plot(model$fitted.values,model$residuals,xlab = "Predicted",ylab = "Residuals",main = "Predicted v. Residuals")
+abline(h = 0,col = "red",lwd = 3,lty = 3)
+```
+\subsection{Pairwise Correlation Coefficient Matrix}
+A _condtion indice_, or pairwise correlation coefficient matrix, is a method to further detect collinearity among the fourteen predictor variables. The correlation coefficient matrix takes the predictor variables and assess the correlation that two predictor variables have through the correlation coefficient. Correlation coefficients between two predictors that are closer to one indicate that two predictor variables are highly correlated. 
+
+The _condtion indice_ shows that there is a correlation between multiple predictor values. The predictor variable $pH$ has a high correlation with $BUF$, $Ca$,$Zn$, $NH_4$ with correlation coefficient values of $-0.946$, $0.877$,$-0.722$ and $-0.745$ respectively. The predictor variable $BUF$ has a high correlation coefficient with $Ca$, $Zn$ and $NH_4$ with correlation coefficient values of $-0.791$, $0.714$ and $0.849$ respectively.The predictor variable $K$ has a high correlation coefficient with $Mg$, $Na$ and $Cu$ with correlation coefficients as $0.862$, $0.792$ and $0.693$ respectively.The predictor variable $Ca$ has a high correlation coefficient with the predictor $Zn$ with  a correlation coefficient of $-0.700$.The predictor variable $Mg$ has a high correlation coefficient with the following predictors $Na$ and $Cu$ with correlation coefficient values of $0.899$ and $0.712$. Lastly, $Mn$ and $Zn$ have a high correlation coefficient of $0.603$, and $Zn$ and $NH_4$ have a high correlation coefficient of $0.721$.
+```{r,echo=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+pcor <- cor(df)[-1,-1]
+pcorr <- round(pcor,2)
+kable(pcorr,format = "latex",caption = "Pairwise Correlation Coefficient Matrix")
+```
+\newpage 
+\subsection{Variance Inflation Factor (VIF)}
+By identifying the predictor variables that have high correlation coefficients, the Variance Inflation Factor utilizes the correlation coefficient, $R^2$, to further analyze the predictors that are influenced by collinearity by regressing each predictor variables against the other predictor variables. The Variance Inflation Factor, or VIF, is calculated by finding the correlation coefficient of a specific predictor variables regressed on all the other predictor variables. Then, using the formula, $VIF = \frac{1}{1-R_j^2}$ where each $R_j^2$ represents the correlation coefficient for each predictor variable $X_j$ from $j = 1, ..., 13, 14$. In the absence of a linear relationship between any predictor variables, the VIF will be 1, and the presence of a linear relationship between any predictor variables will have a VIF value that is large. 
+VIF shows that the predictor variables $pH, BUF, Ca, Mg, Na, Z$ are heavily affected by collinearity, because the VIF values exceed 10. The predictor variables $H_2S, SAL, K,Mn, CU$ and $NH_4$ show that they are also effected by collinearity, since there VIF is between the interval of 3 and 10. The predictor values of $Eh_7$ and $P$ are indicating no effect of collinearity.
+```{r,echo=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+library('regclass')
+
+VIF <- as.data.frame(VIF(model))
+colnames(VIF)[1] <- "VIF"
+kable(VIF,caption = "VIF Values for Each Predictor")
+```
+\subsection{Conclusion}
+Through the analysis of the full regression model it is apparent there is collinearity. This effect of collinearity will prove the full regression model to be inaccurate and cause erroneous predictions of the  aerial biomass production. In the next section a Principle Component Regression will be executed to identify the important physicochemical properties that influence the aerial biomass production in the Cape Fear Estuary. 
+\newpage
+\section{Principle Component Regression}
+It is evident that there are a number of predictors that are collinear. In order to complete a multiple linear regression with fidelity, a Principle Component Regression is in order, because with the existence of collinearity among the predictor variables the coefficient estimates of the model may prove to be unreliable and have high variance. The steps used to complete the Principle Component Regression, known as PCR, are the following:
+\begin{enumerate}
+  \item Standardize the data
+  \item Construct Principle Component Matrix
+  \item Complete Principle Component Regression of the Full Model
+  \item Complete Principle Component Regression of Reduced Model
+  \item Compute Coefficient Values of Reduced Model
+\end{enumerate}
+The data set is standardized by doing the following $z_{ij}=\frac{x_{ij} - \bar{x_{ij}}}{\sigma_{ij}}$ where $i$ is the row value for $i = 1, ..., 13, 14$ and $j$ is the column value for $j = 1, ..., 13, 14$. The standardized data will provide the necessary information to then compute the Principle components of each of the predictors. The full Principle Component Regression reveals that there are a considerable amount of Principle Components that are not significant. the following Principle Components that can be excluded from the Principle Component Regression model are the following: PC4, PC5, PC6, PC10, PC11, PC12, PC13, PC14. The table shows that the Principle Components are significant, because there p-values are smaller than the alpha level $\alpha = 0.05$, and there are Principle Component values whose $\alpha > 0.05$, thus making the Princple Component not significant. 
+```{r,echo=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+#i.)standardizing the dataframe
+bio <- (df$BIO - mean(df$BIO))/sd(df$BIO)
+h2s <- (df$H2S - mean(df$H2S))/sd(df$H2S)
+sal <- (df$SAL - mean(df$SAL))/sd(df$SAL)
+eh7 <- (df$Eh7 - mean(df$Eh7))/sd(df$Eh7)
+ph <- (df$pH - mean(df$pH))/sd(df$pH)
+buf <- (df$BUF - mean(df$BUF))/sd(df$BUF)
+p <- (df$P - mean(df$P))/sd(df$P)
+k <- (df$K - mean(df$K))/sd(df$K)
+ca <- (df$Ca - mean(df$Ca))/sd(df$Ca)
+mg <- (df$Mg - mean(df$Mg))/sd(df$Mg)
+na <- (df$Na - mean(df$Na))/sd(df$Na)
+mn <- (df$Mn - mean(df$Mn))/sd(df$Mn)
+zn <- (df$Zn - mean(df$Zn))/sd(df$Zn)
+cu <- (df$Cu - mean(df$Cu))/sd(df$Cu)
+nh4 <- (df$NH4 - mean(df$NH4))/sd(df$NH4)
+dfs <- data.frame(BIO = bio, H2S = h2s, SAL = sal, EH7 = eh7, pH = ph, BUF = buf, P = p, K = k,
+                  Ca = ca, Mg = mg, Na = na, Mn = mn, Zn = zn, Cu = cu, NH4 = nh4)
+#iv.)construct principle component data frame with BIO from the original data frame. 
+BIOX <- dfs[,-1]
+BIOX.pca <- prcomp(BIOX,center = TRUE,scale. = TRUE)
+biomass.pcr.df <- cbind(df[,1],data.frame(BIOX.pca$x))
+colnames(biomass.pcr.df)[1] <- "BIO"
+#vi.)full regression model
+library("pander")
+model.pcr <- lm(BIO~PC1+PC2+PC3+PC4+PC5+PC6+PC7+PC8+PC9+PC10+PC11+PC12+PC13+PC14,data = biomass.pcr.df)
+pander(anova(model.pcr))
+```
+
+After removing the insignificant Principle Components from the regression model, the reduced Principle Component Regression can determine the model that identifies the important physicochemical properties of the substrate that influence the aerial biomass production.The reduced Principle Regression Model can be used to find the coefficient values for an ordinary least squares regression model. The Principle Components that are removed from the full Principle Component Regression model are the values that have a p-value that is larger than $\alpha > 0.05$. It is permissible for the Principle Components whose p-value exceeds $\alpha$ due to the fact that the Principle Components show no collinearity. This means that the Principle Component Regression is unaffected by the relationship predictor variables have with each other, so by removing Principle Components allows for a more accurate model.
+
+```{r,echo=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+#vii.)reduced regression model
+model.pcr.reduced <- lm(BIO~PC1+PC2+PC3+PC8+PC9,data = biomass.pcr.df)
+pander(anova(model.pcr.reduced))
+```
+
+The coefficient values for the full regression model are shown below in the table. These coefficient values are calculated through using the Principle Component matrix, constructed earlier, multiplied by the coefficients from the model on the Principle Component Regression. These coefficient values reflect a model that is not effected by the collinearity of the predictor variables. Completing the Principle Component Regression is a methodology that can eliminate the collinearity of predictor variables, and prevent erroneous predictions from the regression.
+
+```{r,echo=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+#viii.)computing the beta values from the principle component regression  model. 
+betas <- BIOX.pca$rotation %*% model.pcr$coefficients[-1] 
+betas <- as.data.frame(betas)
+colnames(betas)[1] <- "Beta Values"
+kable(betas,format = "latex",caption = "Beta Values of Ordinary Least Squares Regression")
+```
+\subsection{ Conclusion}
+The Principle Component Regression enables a regression on collinear data. The physicochemical properties of the substrate that influence the aerial biomass production in the Cape Fear Estuary were found due to first, identifying that there indeed exists a collinear relationship among the fourteen predictor variables. After identifying the collinearity, a Principle Component Regression enables the coefficients of the ordinary least squares regression to be found by standardizing the data, creating a principle component matrix, regressing $BIO$ on  the principle component matrix to find the princple components that are significant. From there, the reduced model can be computed by removing the principle components that are not significant due to there larger p-values. Through the reduced principle component regression model it shows that there are a large amount of principle components that were removed. 
+\newpage
+\section{Best Subset Selection}
+When building a regression model for the data, removing the insignificant variables makes the model more accurate, easier to interpret, and less susceptible to overfit the data. The best subset selection process provides an exhaustive search for the best subset of predictor variables by considering all possible combination. The best subset selection process will be produced for a smaller regression where $BIO \sim SAL + pH + K + Na + Zn$. The five predictor variables will be used for the selection procedure. The stepwise selection procedure is a combination of forward selection and backward selection, because variables that enter into the regression model can be removed later in the process, much like backward selection. The p-values are utilized throughout the process to determine which predictor variables are allowed to enter the regression model, and which predictors are removed from the model. 
+\subsection{Best Model}
+To select the best model, a stepwise regression method will be utilized. Throughout the stepwise process, alpha values of $\alpha_{Enter} = 0.15$ and $\alpha_{Remove} = 0.15$ will be used to access the significance of the p-values. 
+
+\subsubsection{Step 1}
+In the first step, the respinse variable, $BIO$, will be regressed five times on the predictor variables, individually, so there are five regression models. The regression model with the predictor that has the smallest p-value will be entered into the model.Since $pH$ has the smallest p-value of the predictors, $pH$ is now entered into the regression model.  
+```{r,echo=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+library("pander")
+
+#Loading Dataframe
+df_3 <- read.table("/Users/robbiemead/Documents/Graduate School/Courses/Fall 2021/MATH 564/Project /Project/LINTH-5.txt",header = TRUE)
+df_3 <- subset(df_3,select = -c(Obs,Loc,Type))
+pander(anova(lm(BIO~SAL,df_3)),style = "rmarkdown")
+pander(anova(lm(BIO~pH,df_3)),style = "rmarkdown")
+pander(anova(lm(BIO~K,df_3)),style = "rmarkdown")
+pander(anova(lm(BIO~Na,df_3)),style = "rmarkdown")
+pander(anova(lm(BIO~Zn,df_3)),style = "rmarkdown")
+```
+\subsubsection{Step 2}
+The regression model will regress $BIO$ on four predictor variables added with $pH$. In order for another predictor to be entered into the model the p-value associated has to be the smallest. The predictor with the smallest p-value is entered into the model. Then, the p-value of the previously added predictor, $pH$ is verified to see if it is still a significant predictor by testing it's p-value. Since the p-values remained accepted at the alpha value of $\alpha = 0.15$ for both $pH$ and $Na$,we can accept $Na$ into the regression model. The p-values for the regression of $Na$ were the smallest, while not effecting the p-value of $pH$. The addition of $Na$ to the model did not disrupt the predictor value $pH$. 
+```{r,echo=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+pander(anova(lm(BIO~pH+SAL,df_3)))
+pander(anova(lm(BIO~pH+K,df_3)))
+pander(anova(lm(BIO~pH+Na,df_3)))
+pander(anova(lm(BIO~pH+Zn,df_3)))
+```
+\subsubsection{Step 3}
+The regression model will regress $BIO$ on three predictor variables added with $pH$ and $Na$. In order for another predictor to be entered into the model, the remaining predictor has to have the smallest p-value that is significant. If there exist a predictor with a significant p-value, then it will be determined if the existence of the predictor in the model changes the p-value of the predictors in the current model. Since none of the predictors produced a significant p-value that was less than 0.15, then the remaining predictors cannot be included in the regression model. Thus, the regression model only has two predictors of $pH$ and $Na$. Therefore, the best subset regression model is $BIO = -475.7 +404.9\cdot pH - 233.3\cdot Na$.
+```{r,echo=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+pander(anova(lm(BIO~pH+Na+SAL,df_3)))
+pander(anova(lm(BIO~pH+Na+K,df_3)))
+pander(anova(lm(BIO~pH+Na+Zn,df_3)))
+```
+\subsection{ Subset Selection }
+Though assessing the best subset for each of the models that have 2 predictors, the best model there is  when $pH$ and $Na$ are in the model because the $C_p$ value, Cooks Distance, is smaller than that of the other model $pH$ and $K$ because the $C_p$ value is larger,however,  only by small margins. Interestingly, the VIF values are switched where the VIF of the second best 2 predictor model is smaller than that of the best 2 predictor model, but again, only by small margins. This subset selection process reinforces the idea that was concluded in the previous subsection, that the best model to use to determine which physicochemical properties that influence the arerial biomass production in Cape Fear are $pH$ and $Na$. Both the Best Model procedure and the Subset Selection process show that the best two-predictor model include $pH$ and $Na$. These conclusions have been derived through different means. 
+```{r,echo=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+library('caret')
+
+#Creating the subset model
+step.model <- regsubsets(BIO~.,data = df_3,nbest = 2,method = "exhaustive")
+subset.summary<- summary(step.model)
+subset.summary.outmat <- as.matrix(subset.summary$outmat)
+
+#Identifying vital statistics to make conclusion
+Cp <- as.vector(subset.summary$cp)
+VIF <- as.vector((1)/(1-subset.summary$rsq))
+best.subset <- cbind(subset.summary.outmat,Cp,VIF)
+kable(best.subset,format = "latex",caption = "Table of Subset Selection ")
+```
+\newpage
+\section{References}
+\begin{enumerate}
+  \item Chatterjee, Samprit, and Ali S. Hadi. Regression Analysis by Example. 5 ed., Wiley, 2013. 
+  \item “Lecture54 (Data2Decision) Principle Components in R.” Performance by Chris Mack, Youtube, 4 Nov. 2016, Accessed 18 Nov. 2021. 
+\end{enumerate}
